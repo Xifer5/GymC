@@ -1,0 +1,24 @@
+{
+  "name": "Gym Manager",
+  "short_name": "Gym Manager",
+  "description": "Socios, membresías, cobros y finanzas de tu gimnasio.",
+  "lang": "es",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6fbf5",
+  "theme_color": "#1b6b4a",
+  "categories": ["business", "fitness"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Cobrar", "url": "/cobrar", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Vencimientos", "url": "/vencimientos", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

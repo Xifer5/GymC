@@ -1,0 +1,137 @@
+/* Tokens Material Design 3 — semilla verde #1B6B4A.
+   Las variables --md-* cambian entre claro/oscuro; Tailwind las expone como utilidades. */
+
+:root {
+  color-scheme: light;
+  --md-primary: #1b6b4a;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #a6f2c8;
+  --md-on-primary-container: #002114;
+  --md-secondary: #4e6355;
+  --md-on-secondary: #ffffff;
+  --md-secondary-container: #d1e8d6;
+  --md-on-secondary-container: #0c1f14;
+  --md-tertiary: #3b6470;
+  --md-on-tertiary: #ffffff;
+  --md-tertiary-container: #beeaf8;
+  --md-on-tertiary-container: #001f28;
+  --md-error: #ba1a1a;
+  --md-on-error: #ffffff;
+  --md-error-container: #ffdad6;
+  --md-on-error-container: #410002;
+  --md-success: #2e7d32;
+  --md-on-success: #ffffff;
+  --md-success-container: #b7f0b8;
+  --md-on-success-container: #00210a;
+  --md-warning: #8a5100;
+  --md-on-warning: #ffffff;
+  --md-warning-container: #ffdcbd;
+  --md-on-warning-container: #2c1600;
+  --md-background: #f6fbf5;
+  --md-on-background: #181d19;
+  --md-surface: #f6fbf5;
+  --md-on-surface: #181d19;
+  --md-surface-variant: #dce5dc;
+  --md-on-surface-variant: #404942;
+  --md-outline: #707972;
+  --md-outline-variant: #c0c9c0;
+  --md-surface-container-lowest: #ffffff;
+  --md-surface-container-low: #f0f5ef;
+  --md-surface-container: #eaefe9;
+  --md-surface-container-high: #e4eae4;
+  --md-surface-container-highest: #dfe4de;
+  --md-inverse-surface: #2d322e;
+  --md-inverse-on-surface: #edf2eb;
+  --md-inverse-primary: #8ad5ad;
+  --md-scrim: #000000;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --md-primary: #8ad5ad;
+    --md-on-primary: #003822;
+    --md-primary-container: #005234;
+    --md-on-primary-container: #a6f2c8;
+    --md-secondary: #b5ccbb;
+    --md-on-secondary: #203528;
+    --md-secondary-container: #364b3d;
+    --md-on-secondary-container: #d1e8d6;
+    --md-tertiary: #a3cddb;
+    --md-on-tertiary: #043542;
+    --md-tertiary-container: #214c59;
+    --md-on-tertiary-container: #beeaf8;
+    --md-error: #ffb4ab;
+    --md-on-error: #690005;
+    --md-error-container: #93000a;
+    --md-on-error-container: #ffdad6;
+    --md-success: #9cd89e;
+    --md-on-success: #00390f;
+    --md-success-container: #0b5220;
+    --md-on-success-container: #b7f0b8;
+    --md-warning: #ffb870;
+    --md-on-warning: #4a2800;
+    --md-warning-container: #6a3c00;
+    --md-on-warning-container: #ffdcbd;
+    --md-background: #101510;
+    --md-on-background: #dfe4de;
+    --md-surface: #101510;
+    --md-on-surface: #dfe4de;
+    --md-surface-variant: #404942;
+    --md-on-surface-variant: #c0c9c0;
+    --md-outline: #8a938b;
+    --md-outline-variant: #404942;
+    --md-surface-container-lowest: #0b0f0b;
+    --md-surface-container-low: #181d19;
+    --md-surface-container: #1c211d;
+    --md-surface-container-high: #262b27;
+    --md-surface-container-highest: #313631;
+    --md-inverse-surface: #dfe4de;
+    --md-inverse-on-surface: #2d322e;
+    --md-inverse-primary: #1b6b4a;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --md-primary: #8ad5ad;
+  --md-on-primary: #003822;
+  --md-primary-container: #005234;
+  --md-on-primary-container: #a6f2c8;
+  --md-secondary: #b5ccbb;
+  --md-on-secondary: #203528;
+  --md-secondary-container: #364b3d;
+  --md-on-secondary-container: #d1e8d6;
+  --md-tertiary: #a3cddb;
+  --md-on-tertiary: #043542;
+  --md-tertiary-container: #214c59;
+  --md-on-tertiary-container: #beeaf8;
+  --md-error: #ffb4ab;
+  --md-on-error: #690005;
+  --md-error-container: #93000a;
+  --md-on-error-container: #ffdad6;
+  --md-success: #9cd89e;
+  --md-on-success: #00390f;
+  --md-success-container: #0b5220;
+  --md-on-success-container: #b7f0b8;
+  --md-warning: #ffb870;
+  --md-on-warning: #4a2800;
+  --md-warning-container: #6a3c00;
+  --md-on-warning-container: #ffdcbd;
+  --md-background: #101510;
+  --md-on-background: #dfe4de;
+  --md-surface: #101510;
+  --md-on-surface: #dfe4de;
+  --md-surface-variant: #404942;
+  --md-on-surface-variant: #c0c9c0;
+  --md-outline: #8a938b;
+  --md-outline-variant: #404942;
+  --md-surface-container-lowest: #0b0f0b;
+  --md-surface-container-low: #181d19;
+  --md-surface-container: #1c211d;
+  --md-surface-container-high: #262b27;
+  --md-surface-container-highest: #313631;
+  --md-inverse-surface: #dfe4de;
+  --md-inverse-on-surface: #2d322e;
+  --md-inverse-primary: #1b6b4a;
+}

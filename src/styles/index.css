@@ -1,0 +1,124 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+/* Expone los tokens como utilidades: bg-primary, text-on-surface, rounded-lg, shadow-2... */
+@theme inline {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --color-primary: var(--md-primary);
+  --color-on-primary: var(--md-on-primary);
+  --color-primary-container: var(--md-primary-container);
+  --color-on-primary-container: var(--md-on-primary-container);
+  --color-secondary: var(--md-secondary);
+  --color-on-secondary: var(--md-on-secondary);
+  --color-secondary-container: var(--md-secondary-container);
+  --color-on-secondary-container: var(--md-on-secondary-container);
+  --color-tertiary: var(--md-tertiary);
+  --color-on-tertiary: var(--md-on-tertiary);
+  --color-tertiary-container: var(--md-tertiary-container);
+  --color-on-tertiary-container: var(--md-on-tertiary-container);
+  --color-error: var(--md-error);
+  --color-on-error: var(--md-on-error);
+  --color-error-container: var(--md-error-container);
+  --color-on-error-container: var(--md-on-error-container);
+  --color-success: var(--md-success);
+  --color-on-success: var(--md-on-success);
+  --color-success-container: var(--md-success-container);
+  --color-on-success-container: var(--md-on-success-container);
+  --color-warning: var(--md-warning);
+  --color-on-warning: var(--md-on-warning);
+  --color-warning-container: var(--md-warning-container);
+  --color-on-warning-container: var(--md-on-warning-container);
+  --color-background: var(--md-background);
+  --color-on-background: var(--md-on-background);
+  --color-surface: var(--md-surface);
+  --color-on-surface: var(--md-on-surface);
+  --color-surface-variant: var(--md-surface-variant);
+  --color-on-surface-variant: var(--md-on-surface-variant);
+  --color-outline: var(--md-outline);
+  --color-outline-variant: var(--md-outline-variant);
+  --color-surface-lowest: var(--md-surface-container-lowest);
+  --color-surface-low: var(--md-surface-container-low);
+  --color-surface-container: var(--md-surface-container);
+  --color-surface-high: var(--md-surface-container-high);
+  --color-surface-highest: var(--md-surface-container-highest);
+  --color-inverse-surface: var(--md-inverse-surface);
+  --color-inverse-on-surface: var(--md-inverse-on-surface);
+  --color-inverse-primary: var(--md-inverse-primary);
+  --color-scrim: var(--md-scrim);
+
+  /* Formas M3 */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 28px;
+
+  /* Elevación M3 (niveles 0–3) */
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.3), 0 1px 3px 1px rgb(0 0 0 / 0.15);
+  --shadow-2: 0 1px 2px rgb(0 0 0 / 0.3), 0 2px 6px 2px rgb(0 0 0 / 0.15);
+  --shadow-3: 0 1px 3px rgb(0 0 0 / 0.3), 0 4px 8px 3px rgb(0 0 0 / 0.15);
+
+  /* Movimiento M3: estándar (200 ms, curva 0.2/0/0/1). Cualquier `transition` de Tailwind lo hereda. */
+  --default-transition-duration: 200ms;
+  --default-transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+
+  --font-sans: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Breakpoints M3: compact <600, medium 600–1023, expanded ≥1024 */
+  --breakpoint-sm: 600px;
+  --breakpoint-lg: 1024px;
+}
+
+/* Escala tipográfica M3: text-display-lg, text-headline-md, text-body-md, text-label-lg ... */
+@utility text-display-lg { font-size: 3.5625rem; line-height: 4rem; letter-spacing: -0.016rem; font-weight: 400; }
+@utility text-display-md { font-size: 2.8125rem; line-height: 3.25rem; font-weight: 400; }
+@utility text-display-sm { font-size: 2.25rem; line-height: 2.75rem; font-weight: 400; }
+@utility text-headline-lg { font-size: 2rem; line-height: 2.5rem; font-weight: 400; }
+@utility text-headline-md { font-size: 1.75rem; line-height: 2.25rem; font-weight: 400; }
+@utility text-headline-sm { font-size: 1.5rem; line-height: 2rem; font-weight: 400; }
+@utility text-title-lg { font-size: 1.375rem; line-height: 1.75rem; font-weight: 400; }
+@utility text-title-md { font-size: 1rem; line-height: 1.5rem; letter-spacing: 0.009rem; font-weight: 500; }
+@utility text-title-sm { font-size: 0.875rem; line-height: 1.25rem; letter-spacing: 0.006rem; font-weight: 500; }
+@utility text-body-lg { font-size: 1rem; line-height: 1.5rem; letter-spacing: 0.03rem; font-weight: 400; }
+@utility text-body-md { font-size: 0.875rem; line-height: 1.25rem; letter-spacing: 0.016rem; font-weight: 400; }
+@utility text-body-sm { font-size: 0.75rem; line-height: 1rem; letter-spacing: 0.025rem; font-weight: 400; }
+@utility text-label-lg { font-size: 0.875rem; line-height: 1.25rem; letter-spacing: 0.006rem; font-weight: 500; }
+@utility text-label-md { font-size: 0.75rem; line-height: 1rem; letter-spacing: 0.031rem; font-weight: 500; }
+@utility text-label-sm { font-size: 0.6875rem; line-height: 1rem; letter-spacing: 0.031rem; font-weight: 500; }
+
+/* State layer M3: hover 8%, focus/pressed 10%. Úsalo en cualquier elemento interactivo. */
+@utility state-layer {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 150ms;
+    pointer-events: none;
+    z-index: -1;
+  }
+  &:hover::before { opacity: 0.08; }
+  &:focus-visible::before, &:active::before { opacity: 0.1; }
+}
+
+@layer base {
+  html { font-family: var(--font-sans); }
+  body {
+    background: var(--md-background);
+    color: var(--md-on-background);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 2px solid var(--md-primary); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  }
+}
