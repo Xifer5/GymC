@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gymc",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    // App de una sola página: cualquier ruta (/socios, /cobrar...) devuelve index.html
+    "not_found_handling": "single-page-application"
+  }
+}

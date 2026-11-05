@@ -13,6 +13,9 @@ npm run build      # genera dist/
 ```
 Usuarios de demostración: `admin@gym.local` / `admin123` y `recep@gym.local` / `recep123`.
 
+## Publicar (Cloudflare Workers/Pages desde GitHub)
+Build command `npm run build` · deploy command `npx wrangler deploy` · configuración en `wrangler.jsonc` (SPA: toda ruta devuelve `index.html`).
+
 ## Documentación
 `CLAUDE.md` (contexto) · `docs/SPEC.md` · `docs/DATA_MODEL.md` · `docs/TASKS.md` · `docs/DESIGN.md` · `docs/LOG.md`
 
