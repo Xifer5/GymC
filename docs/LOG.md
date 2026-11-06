@@ -30,6 +30,8 @@
 - PWA: el service worker solo cachea el shell y los archivos propios; no hay escritura offline. Con el mock local (localStorage) cobrar "funciona" sin red; al conectar Supabase, el adaptador debe convertir los fallos de red en un `AppError` claro ("Sin conexión") y los formularios mostrarlo. Cuando se publique una versión nueva, el HTML (red primero) trae los archivos nuevos en la siguiente carga; no hay aviso de "nueva versión" todavía.
 - Tipografía: se declara Roboto sin empaquetarla (en Android ya viene; en otros sistemas cae a la fuente del sistema). Empaquetar 400/500 (~30 KB) si se quiere idéntico en todos lados.
 - Datos de demostración: `src/lib/data/demo.ts` (solo mock; `demo.available` pasa a `false` al conectar Supabase y la UI oculta la tarjeta). Cargar se niega si ya hay socios. Depende de la fecha de hoy (el mes en curso siempre trae ingresos y gastos).
+- Borrado: "Borrar todos los datos" y "Reemplazar con datos de ejemplo" existen solo en la demo local (protegidos por confirmación y con opción de descargar copia antes). En producción no habrá DELETE ni borrado masivo: el diseño SQL no tiene políticas de borrado y las escrituras financieras pasan por RPC. Si algún día hace falta eliminar datos (p. ej. pedido de privacidad), será una operación administrativa aparte y registrada.
+- Excel: el .xlsx se genera sin compresión (más pesado, ~100 KB con la demo) y sin estilos más allá de encabezado y formato de importe. Si algún día pesa mucho, comprimir con `CompressionStream`.
 - Los números de recibo pueden saltarse si una transacción falla tras incrementar el contador en SQL real (en el mock no ocurre por el rollback). Aceptable; los recibos nunca se reutilizan.
 
 ## Mejoras propuestas
@@ -37,6 +39,8 @@
 |---|---|---|---|
 | IMP-001 | Offline de escritura en recepción (cola local de pagos) | Baja | Idea |
 | IMP-002 | Asistencia por QR | Futura | Idea |
+| IMP-006 | **Trazabilidad visible**: quién registró/anuló cada pago o movimiento y cuándo, bitácora de cambios (precios, permisos, usuarios), todo exportable. El SQL ya guarda `created_by`, `voided_by`, `voided_at` y `audit_log`; falta llevarlo al mock, la UI y la exportación (T-24) | Alta (antes de v1.0) | Pendiente |
+| IMP-007 | Respaldo programado automático (T-20) y restauración desde la copia JSON/Excel | Media | Pendiente |
 | IMP-004 | Membresía de cortesía (sin pago) con permiso propio | Media | Idea |
 | IMP-005 | Compartir recibo por WhatsApp (enlace/PDF) | Futura | Idea |
 | IMP-003 | Recordatorios de pago por WhatsApp | Futura | Idea |

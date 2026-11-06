@@ -18,7 +18,7 @@ export * from './types'
  */
 export const demo = {
   available: true as boolean,
-  load: () => api.demo.load(),
+  load: (opts?: { replace?: boolean }) => api.demo.load(opts),
   clear: () => api.demo.clear(),
 }
 

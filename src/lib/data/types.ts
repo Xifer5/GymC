@@ -180,6 +180,19 @@ export interface LedgerEntry {
   amountCents: Cents
 }
 
+/** Copia completa de los datos del gimnasio para exportar (nunca incluye contraseñas). Incluye lo anulado, con su motivo. */
+export interface BackupData {
+  exportedAt: string
+  gym: GymInfo
+  plans: Plan[]
+  categories: Category[]
+  members: Member[]
+  memberships: (Membership & { memberName: string; memberCi: string })[]
+  payments: (Payment & { memberName: string; memberCi: string })[]
+  movements: (Movement & { categoryName: string; createdByName: string })[]
+  staff: Pick<Profile, 'fullName' | 'email' | 'role' | 'permissions' | 'active'>[]
+}
+
 export interface DashboardData {
   totalMembers: number
   /** Socios con membresía vigente (activa o por vencer). */
@@ -281,6 +294,10 @@ export interface DataApi {
   }
   dashboard: {
     get(): Promise<DashboardData>
+  }
+  backup: {
+    /** Todos los datos del gimnasio, para descargar. Requiere `settings.manage`. */
+    get(): Promise<BackupData>
   }
 }
 

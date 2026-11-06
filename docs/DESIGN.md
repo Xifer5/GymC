@@ -88,3 +88,7 @@ Pendiente de ui/: DatePicker propio (por ahora `TextField type="date"`), Chip.
 - PWA: `public/manifest.webmanifest` (standalone, atajos Cobrar/Vencimientos), íconos generados (normal, maskable con zona segura, Apple), `public/sw.js` (shell + `/assets/` precargados al instalar; páginas red-primero; `ignoreVary` por `Vary: Origin` de los módulos ES). Se registra solo en producción (`lib/pwa.ts`). `OfflineBanner` avisa sin red.
 - Auditoría `/md3-audit` (ver resultados en LOG): tokens sin colores sueltos, escala tipográfica única, formas y elevación por tokens, movimiento M3 por defecto (200 ms, curva 0.2/0/0/1) y `prefers-reduced-motion` respetado.
 - Reglas que se mantienen: área táctil 48 px en móvil (`h-12 sm:h-10`), un solo `h1` por pantalla, títulos de estado vacío no son encabezados, enlaces en tablas con `min-h-12`, `BackLink` para volver, campos con `aria-invalid` + `role="alert"`, foco visible global (los campos usan subrayado de 2 px).
+
+## Exportación y demo (T-19+)
+- `lib/csv.ts` (CSV Excel-es: `;`, BOM, coma decimal, anti-fórmula), `lib/xlsx.ts` (xlsx real sin dependencias: ZIP "store", hojas, encabezado en negrita y fijo, importes numéricos), `lib/exports.ts` (tablas Socios/Membresías/Pagos/Movimientos + Resumen). `api.backup.get()` (permiso `settings.manage`) entrega todo, incluidos archivados y anulados, nunca contraseñas.
+- Ajustes tiene 4 pestañas: Gimnasio · Categorías · Datos · Personal. `DemoDataCard`: cargar / reemplazar / borrar con confirmación y "Descargar una copia antes".

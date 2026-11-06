@@ -35,3 +35,4 @@ Formato: `[ ] ID — tarea (depende de) · criterio`. Marcar `[x]` al terminar y
 
 ## Definición de "hecho"
 Funciona en móvil y desktop · estados loading/error/empty · sin componente duplicado · tests de lo financiero · docs actualizados.
+- [ ] T-24 — Trazabilidad visible (antes de v1.0): `createdBy`/`voidedBy`/`voidedAt` en pagos y movimientos (tipos, mock, SQL ya los tiene), mostrar "Anulado por X el dd/mm hh:mm" en tablas, pantalla de bitácora (`audit_log`) para admin, y esas columnas en la exportación. Ver LOG IMP-006

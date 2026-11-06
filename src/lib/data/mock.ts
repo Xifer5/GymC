@@ -17,7 +17,7 @@ import type {
   Category, DashboardData, DataApi, DateRange, LedgerEntry, Member, MemberInput, Membership,
   MemberListItem, MembershipWithMember, Movement, Page, PageQuery, Payment, PaymentMethod, Permission, Plan,
   PlanInput, Profile, StaffInput, Summary,
-  GymInfo,
+  BackupData, GymInfo,
 } from './types'
 
 type StoredUser = Profile & { password: string }
@@ -124,7 +124,7 @@ function requirePositiveCents(v: number, label = 'El monto') {
 /** Extras solo del mock: demo y reinicio. No forman parte de `DataApi`. */
 export interface MockExtras {
   reset(): void
-  demo: { load(): Promise<void>; clear(): Promise<void> }
+  demo: { load(opts?: { replace?: boolean }): Promise<void>; clear(): Promise<void> }
 }
 
 export function createMockApi(opts: MockOptions = {}): DataApi & MockExtras {
@@ -269,11 +269,11 @@ export function createMockApi(opts: MockOptions = {}): DataApi & MockExtras {
 
   const api: DataApi & MockExtras = {
     demo: {
-      async load() {
+      async load(o) {
         await lag(); need('settings.manage')
         tx(() => {
-          if (state.members.length > 0) throw new AppError('conflict', 'Ya hay datos. Bórralos antes de cargar el ejemplo.')
-          state = buildDemoState(state, today())
+          if (state.members.length > 0 && !o?.replace) throw new AppError('conflict', 'Ya hay datos. Bórralos o elige reemplazarlos.')
+          state = buildDemoState(clearData(state), today())
         })
       },
       async clear() {
@@ -598,6 +598,29 @@ export function createMockApi(opts: MockOptions = {}): DataApi & MockExtras {
             })),
         ]
         return rows.sort((a, b) => (a.date === b.date ? (a.id < b.id ? -1 : 1) : a.date < b.date ? -1 : 1))
+      },
+    },
+
+    backup: {
+      async get(): Promise<BackupData> {
+        await lag(); need('settings.manage')
+        const member = new Map(state.members.map((m) => [m.id, m]))
+        const cat = new Map(state.categories.map((c) => [c.id, c.name]))
+        const user = new Map(state.users.map((u) => [u.id, u.fullName]))
+        const who = (id: string) => ({ memberName: member.get(id)?.fullName ?? '—', memberCi: member.get(id)?.ci ?? '' })
+        return structuredClone({
+          exportedAt: now().toISOString(),
+          gym: state.gym,
+          plans: state.plans,
+          categories: state.categories,
+          members: state.members,
+          memberships: state.memberships.map((m) => ({ ...view(m), ...who(m.memberId) })),
+          payments: state.payments.map((p) => ({ ...p, ...who(p.memberId) })),
+          movements: state.movements.map((m) => ({
+            ...m, categoryName: cat.get(m.categoryId) ?? '—', createdByName: user.get(m.createdBy) ?? '—',
+          })),
+          staff: state.users.map(({ fullName, email, role, permissions, active }) => ({ fullName, email, role, permissions, active })),
+        })
       },
     },
 

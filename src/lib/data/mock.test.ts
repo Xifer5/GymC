@@ -95,6 +95,16 @@ describe('datos de demostración', () => {
     expect((await a.members.list()).total).toBe(25)
   })
 
+  it('replace sustituye lo que hubiera por el ejemplo', async () => {
+    const a = createMockApi({ storage: memoryStorage() })
+    await a.auth.signIn('admin@gym.local', 'admin123')
+    await a.members.create({ fullName: 'Mío', ci: '1', phone: '1' })
+    await a.demo.load({ replace: true })
+    const list = (await a.members.list({ pageSize: 100 })).items
+    expect(list).toHaveLength(25)
+    expect(list.some((m) => m.fullName === 'Mío')).toBe(false)
+  })
+
   it('solo con settings.manage', async () => {
     const a = createMockApi({ storage: memoryStorage() })
     await a.auth.signIn('recep@gym.local', 'recep123')

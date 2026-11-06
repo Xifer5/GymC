@@ -1,5 +1,6 @@
 import type { ISODate } from './dates'
 import { addDays, diffDays } from './dates'
+import { csvMoney, csvText, toCsv } from './csv'
 import type { LedgerEntry, PaymentMethod } from './data/types'
 import type { Cents } from './money'
 
@@ -70,19 +71,6 @@ export function buildReport(entries: LedgerEntry[], from: ISODate, to: ISODate):
 const KIND_LABEL: Record<LedgerEntry['kind'], string> = { payment: 'Pago de socio', income: 'Ingreso', expense: 'Egreso' }
 const METHOD_LABEL: Record<PaymentMethod, string> = { cash: 'Efectivo', transfer: 'Transferencia', qr: 'QR' }
 
-/** Texto de celda seguro: comillas dobles y sin que Excel lo interprete como fórmula (`= + - @`). */
-function textCell(v: string): string {
-  const safe = /^[=+\-@\t\r]/.test(v) ? `'${v}` : v
-  return `"${safe.replace(/"/g, '""')}"`
-}
-
-/** Importe con coma decimal, sin separador de miles (Excel en español lo reconoce como número). */
-function numberCell(cents: Cents): string {
-  const sign = cents < 0 ? '-' : ''
-  const abs = Math.abs(cents)
-  return `${sign}${Math.floor(abs / 100)},${String(abs % 100).padStart(2, '0')}`
-}
-
 const signed = (e: LedgerEntry): Cents => (e.kind === 'expense' ? -e.amountCents : e.amountCents)
 
 /**
@@ -90,20 +78,17 @@ const signed = (e: LedgerEntry): Cents => (e.kind === 'expense' ? -e.amountCents
  * Termina con una fila de total (el balance).
  */
 export function ledgerToCsv(entries: LedgerEntry[]): string {
-  const header = ['Fecha', 'Tipo', 'Categoría', 'Descripción', 'Método', 'Importe (Bs)'].join(';')
-  const rows = entries.map((e) =>
-    [
-      e.date,
-      textCell(KIND_LABEL[e.kind]),
-      textCell(e.category),
-      textCell(e.description),
-      textCell(METHOD_LABEL[e.method]),
-      numberCell(signed(e)),
-    ].join(';'),
-  )
+  const rows = entries.map((e) => [
+    e.date,
+    csvText(KIND_LABEL[e.kind]),
+    csvText(e.category),
+    csvText(e.description),
+    csvText(METHOD_LABEL[e.method]),
+    csvMoney(signed(e)),
+  ])
   const balance = entries.reduce((n, e) => n + signed(e), 0)
-  const total = ['', '', '', textCell('BALANCE'), '', numberCell(balance)].join(';')
-  return '﻿' + [header, ...rows, total].join('\r\n') + '\r\n'
+  rows.push(['', '', '', csvText('BALANCE'), '', csvMoney(balance)])
+  return toCsv(['Fecha', 'Tipo', 'Categoría', 'Descripción', 'Método', 'Importe (Bs)'], rows)
 }
 
 export const csvFileName = (from: ISODate, to: ISODate) => `reporte_${from}_${to}.csv`

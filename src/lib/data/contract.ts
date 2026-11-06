@@ -327,6 +327,23 @@ export function runDataApiContract(name: string, factory: () => DataApi) {
         await api.staff.update(rosa.id, { active: false })
         expect(await code(api.auth.signIn('rosa@gym.local', 'clave1234'))).toBe('unauthenticated')
       })
+      it('copia de datos: solo admin, incluye lo anulado con su motivo y nunca contraseñas', async () => {
+        const m = await newMember('777', 'Copia Uno')
+        const pay = await api.payments.sell({ memberId: m.id, planId: mensual.id, paidCents: 15000, method: 'qr' })
+        await api.payments.void(pay.id, 'cobro duplicado')
+        const [exp] = await api.categories.list('expense')
+        const mov = await api.movements.register({ type: 'expense', categoryId: exp.id, description: 'Luz', amountCents: 500, method: 'cash' })
+        await api.movements.void(mov.id, 'error')
+        const b = await api.backup.get()
+        expect(b.members.map((x) => x.fullName)).toContain('Copia Uno')
+        expect(b.payments[0]).toMatchObject({ status: 'voided', voidReason: 'cobro duplicado', memberName: 'Copia Uno', memberCi: '777' })
+        expect(b.memberships[0]).toMatchObject({ memberName: 'Copia Uno', planName: 'Mensual', dueCents: 15000 })
+        expect(b.movements[0]).toMatchObject({ status: 'voided', categoryName: exp.name, createdByName: 'Admin Demo' })
+        expect(b.staff.length).toBeGreaterThanOrEqual(2)
+        expect(JSON.stringify(b)).not.toMatch(/password|admin123|recep123/i)
+        await api.auth.signIn(...RECEP)
+        expect(await code(api.backup.get())).toBe('forbidden')
+      })
       it('personal: no se modifica a un administrador', async () => {
         const admin = (await api.staff.list()).find((u) => u.role === 'admin')!
         expect(await code(api.staff.update(admin.id, { active: false }))).toBe('forbidden')

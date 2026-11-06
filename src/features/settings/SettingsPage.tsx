@@ -6,10 +6,11 @@ import { Segmented } from '@/components/ui/Segmented'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { CategoriesSettings } from './CategoriesSettings'
 import { DemoDataCard } from './DemoDataCard'
+import { ExportSettings } from './ExportSettings'
 import { GymSettings } from './GymSettings'
 import { StaffSettings } from './StaffSettings'
 
-type Tab = 'gym' | 'categories' | 'staff'
+type Tab = 'gym' | 'categories' | 'data' | 'staff'
 
 /** Ajustes: datos del gimnasio, categorías y personal (cada sección según permiso). */
 export function SettingsPage() {
@@ -17,6 +18,7 @@ export function SettingsPage() {
   const tabs: { value: Tab; label: string }[] = [
     { value: 'gym', label: 'Gimnasio' },
     { value: 'categories', label: 'Categorías' },
+    { value: 'data', label: 'Datos' },
     ...(can('staff.manage') ? [{ value: 'staff' as const, label: 'Personal' }] : []),
   ]
   const [tab, setTab] = useState<Tab>('gym')
@@ -24,7 +26,7 @@ export function SettingsPage() {
 
   return (
     <>
-      <PageHeader title="Ajustes" description="Configura el gimnasio, las categorías y quién puede usar el sistema." />
+      <PageHeader title="Ajustes" description="Configura el gimnasio, las categorías, descarga tus datos y decide quién puede usar el sistema." />
       <div class="mb-6 max-w-lg">
         <Segmented<Tab> label="Sección de ajustes" value={tab} onChange={setTab} options={tabs} />
       </div>
@@ -35,6 +37,7 @@ export function SettingsPage() {
         </div>
       )}
       {tab === 'categories' && <CategoriesSettings />}
+      {tab === 'data' && <ExportSettings />}
       {tab === 'staff' && can('staff.manage') && <StaffSettings />}
     </>
   )

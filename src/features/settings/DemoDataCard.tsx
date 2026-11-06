@@ -1,37 +1,56 @@
 import { useRef, useState } from 'preact/hooks'
-import { FlaskConical } from 'lucide-preact'
+import { Download, FlaskConical } from 'lucide-preact'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useSnackbar } from '@/components/ui/Snackbar'
 import { AppError, demo } from '@/lib/data'
+import { downloadBackup } from './backupActions'
+
+type Action = 'load' | 'replace' | 'clear'
+
+const DONE: Record<Action, string> = {
+  load: 'Datos de ejemplo cargados',
+  replace: 'Datos reemplazados por el ejemplo',
+  clear: 'Datos borrados. Empiezas de cero.',
+}
 
 /**
- * Carga o borra los datos de demostración (solo con el adaptador mock). Sin datos ofrece cargar el ejemplo;
- * con datos ofrece borrarlos todos para empezar de cero.
+ * Datos de demostración (solo con el adaptador mock). Sin datos: cargar el ejemplo.
+ * Con datos: reemplazarlos por el ejemplo o borrarlos todos, siempre con confirmación y con la opción de descargar una copia antes.
+ * Es una herramienta de pruebas: con un servidor real no existe (los registros financieros no se borran, se anulan con motivo).
  */
 export function DemoDataCard({ hasData, onChanged }: { hasData: boolean; onChanged: () => void }) {
   const snack = useSnackbar()
   const [busy, setBusy] = useState(false)
-  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirm, setConfirm] = useState<'replace' | 'clear' | null>(null)
   const running = useRef(false)
 
   if (!demo.available) return null
 
-  async function run(action: 'load' | 'clear') {
+  async function run(action: Action) {
     if (running.current) return
     running.current = true
     setBusy(true)
     try {
-      await demo[action]()
-      snack.show(action === 'load' ? 'Datos de ejemplo cargados' : 'Datos borrados. Empiezas de cero.')
+      if (action === 'clear') await demo.clear()
+      else await demo.load({ replace: action === 'replace' })
+      snack.show(DONE[action])
       onChanged()
     } catch (err) {
       snack.show(err instanceof AppError ? err.message : 'No se pudo completar la acción')
     } finally {
       running.current = false
       setBusy(false)
-      setConfirmOpen(false)
+      setConfirm(null)
+    }
+  }
+
+  async function backupFirst() {
+    try {
+      snack.show(`Descargado: ${await downloadBackup('xlsx')}`)
+    } catch (err) {
+      snack.show(err instanceof AppError ? err.message : 'No se pudo preparar la descarga')
     }
   }
 
@@ -43,14 +62,19 @@ export function DemoDataCard({ hasData, onChanged }: { hasData: boolean; onChang
           <h3 class="text-title-md">Datos de demostración</h3>
           <p class="mt-1 text-body-md text-on-surface-variant">
             {hasData
-              ? 'Esta versión guarda los datos solo en este dispositivo. Puedes borrar todos los socios, pagos y movimientos para empezar de cero.'
+              ? 'Esta versión de pruebas guarda los datos solo en este dispositivo. Puedes reemplazarlos por un gimnasio de ejemplo o borrarlos para empezar de cero.'
               : 'Aún no hay datos. Carga un gimnasio de ejemplo para probar la app: socios vigentes, por vencer y vencidos, cobros, egresos y reportes.'}
           </p>
-          <div class="mt-4">
+          <div class="mt-4 flex flex-wrap gap-2">
             {hasData ? (
-              <Button variant="outlined" onClick={() => setConfirmOpen(true)} disabled={busy}>
-                Borrar todos los datos
-              </Button>
+              <>
+                <Button variant="tonal" onClick={() => setConfirm('replace')} disabled={busy}>
+                  Reemplazar con datos de ejemplo
+                </Button>
+                <Button variant="outlined" onClick={() => setConfirm('clear')} disabled={busy}>
+                  Borrar todos los datos
+                </Button>
+              </>
             ) : (
               <Button variant="tonal" onClick={() => void run('load')} loading={busy}>
                 Cargar datos de ejemplo
@@ -61,18 +85,25 @@ export function DemoDataCard({ hasData, onChanged }: { hasData: boolean; onChang
       </div>
 
       <ConfirmDialog
-        open={confirmOpen}
-        title="Borrar todos los datos"
+        open={confirm !== null}
+        title={confirm === 'replace' ? 'Reemplazar con datos de ejemplo' : 'Borrar todos los datos'}
         destructive
-        confirmLabel="Borrar todo"
+        confirmLabel={confirm === 'replace' ? 'Reemplazar' : 'Borrar todo'}
         loading={busy}
-        onCancel={() => !busy && setConfirmOpen(false)}
-        onConfirm={() => void run('clear')}
+        onCancel={() => !busy && setConfirm(null)}
+        onConfirm={() => confirm && void run(confirm)}
       >
         <p class="text-body-md">
-          Se borrarán los socios, membresías, pagos e ingresos/egresos de este dispositivo. No se puede deshacer. Los planes, categorías y usuarios se
-          conservan.
+          {confirm === 'replace'
+            ? 'Se borrarán los socios, pagos e ingresos/egresos actuales de este dispositivo y se cargará el gimnasio de ejemplo. '
+            : 'Se borrarán los socios, membresías, pagos e ingresos/egresos de este dispositivo. '}
+          No se puede deshacer. Los planes, categorías y usuarios se conservan.
         </p>
+        <div class="mt-3">
+          <Button variant="text" icon={<Download size={18} aria-hidden="true" />} onClick={() => void backupFirst()} disabled={busy}>
+            Descargar una copia antes (Excel)
+          </Button>
+        </div>
       </ConfirmDialog>
     </Card>
   )
