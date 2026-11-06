@@ -1,8 +1,11 @@
 import { useState } from 'preact/hooks'
+import { api } from '@/lib/data'
+import { useAsyncData } from '@/lib/useAsyncData'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Segmented } from '@/components/ui/Segmented'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { CategoriesSettings } from './CategoriesSettings'
+import { DemoDataCard } from './DemoDataCard'
 import { GymSettings } from './GymSettings'
 import { StaffSettings } from './StaffSettings'
 
@@ -17,6 +20,7 @@ export function SettingsPage() {
     ...(can('staff.manage') ? [{ value: 'staff' as const, label: 'Personal' }] : []),
   ]
   const [tab, setTab] = useState<Tab>('gym')
+  const summary = useAsyncData(() => api.dashboard.get(), [])
 
   return (
     <>
@@ -24,7 +28,12 @@ export function SettingsPage() {
       <div class="mb-6 max-w-lg">
         <Segmented<Tab> label="Sección de ajustes" value={tab} onChange={setTab} options={tabs} />
       </div>
-      {tab === 'gym' && <GymSettings />}
+      {tab === 'gym' && (
+        <div class="space-y-8">
+          <GymSettings />
+          {summary.data && <DemoDataCard hasData={summary.data.totalMembers > 0} onChanged={summary.reload} />}
+        </div>
+      )}
       {tab === 'categories' && <CategoriesSettings />}
       {tab === 'staff' && can('staff.manage') && <StaffSettings />}
     </>

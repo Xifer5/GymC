@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useAuth } from '@/features/auth/AuthProvider'
-import { api } from '@/lib/data'
+import { DemoDataCard } from '@/features/settings/DemoDataCard'
+import { api, demo } from '@/lib/data'
 import type { PaymentWithMember, Summary } from '@/lib/data'
 import { formatDate, timestampToISODate } from '@/lib/dates'
 import { PAYMENT_METHOD_LABEL } from '@/lib/labels'
@@ -92,6 +93,12 @@ export function DashboardPage() {
   return (
     <>
       {header}
+
+      {d.totalMembers === 0 && demo.available && can('settings.manage') && (
+        <div class="mb-6">
+          <DemoDataCard hasData={false} onChanged={data.reload} />
+        </div>
+      )}
 
       <section aria-label="Socios" class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Socios" value={d.totalMembers} icon={Users} href={link} hint="Sin archivados" />

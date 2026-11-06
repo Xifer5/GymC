@@ -12,5 +12,15 @@ export const api = createMockApi({
 
 export * from './types'
 
+/**
+ * Datos de demostración. Solo existen con el adaptador mock (sin servidor); al conectar Supabase
+ * `available` pasa a `false` y la interfaz oculta los botones. Requiere `settings.manage`.
+ */
+export const demo = {
+  available: true as boolean,
+  load: () => api.demo.load(),
+  clear: () => api.demo.clear(),
+}
+
 // Solo desarrollo: permite sembrar/inspeccionar datos desde la consola del navegador (`__api.members.list()`).
 if (import.meta.env.DEV) Object.assign(window, { __api: api })

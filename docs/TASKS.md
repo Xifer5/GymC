@@ -7,7 +7,7 @@ Formato: `[ ] ID — tarea (depende de) · criterio`. Marcar `[x]` al terminar y
 - [-] T-02 (en pausa: se trabaja con mock local) — Proyecto Supabase (dev), aplicar `0001_init.sql`, seed: gym + categorías + admin (T-01) · login manual funciona en SQL editor
 - [~] T-03 — (parcial: money.ts y dates.ts con tests ✔) Cliente Supabase, tipos generados (T-01) · tests de redondeo/formato Bs pasan
 - [x] T-04 — Tokens M3 en Tailwind + `DESIGN.md` (modo claro/oscuro) (T-01)
-- [ ] T-05 — Cloudflare Pages conectado a GitHub, deploy automático (T-01)
+- [x] T-05 — Cloudflare Pages conectado a GitHub, deploy automático (T-01)
 
 ## Bloque B — Rebanada 1: cobrar una mensualidad (núcleo)
 - [x] T-06 — Auth: login, sesión, guard de rutas, hook `usePermission` (T-02,T-03)

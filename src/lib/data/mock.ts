@@ -11,6 +11,7 @@ import type { ISODate } from '../dates'
 import { sumCents } from '../money'
 import { hasPermission } from '../permissions'
 import type { Cents } from '../money'
+import { buildDemoState, clearData } from './demo'
 import { AppError, GRANTABLE_PERMISSIONS } from './types'
 import type {
   Category, DashboardData, DataApi, DateRange, LedgerEntry, Member, MemberInput, Membership,
@@ -20,9 +21,9 @@ import type {
 } from './types'
 
 type StoredUser = Profile & { password: string }
-type StoredMembership = Omit<Membership, 'paidCents' | 'dueCents'>
+export type StoredMembership = Omit<Membership, 'paidCents' | 'dueCents'>
 
-interface DbState {
+export interface DbState {
   users: StoredUser[]
   sessionUserId: string | null
   plans: Plan[]
@@ -120,7 +121,13 @@ function requirePositiveCents(v: number, label = 'El monto') {
   if (!Number.isSafeInteger(v) || v <= 0) throw new AppError('invalid', `${label} debe ser mayor a 0`)
 }
 
-export function createMockApi(opts: MockOptions = {}): DataApi & { reset(): void } {
+/** Extras solo del mock: demo y reinicio. No forman parte de `DataApi`. */
+export interface MockExtras {
+  reset(): void
+  demo: { load(): Promise<void>; clear(): Promise<void> }
+}
+
+export function createMockApi(opts: MockOptions = {}): DataApi & MockExtras {
   const key = opts.storageKey ?? 'gm-mock-db'
   const now = opts.now ?? (() => new Date())
   const today = () => todayISO(GYM_TZ, now())
@@ -260,7 +267,20 @@ export function createMockApi(opts: MockOptions = {}): DataApi & { reset(): void
     }
   }
 
-  const api: DataApi & { reset(): void } = {
+  const api: DataApi & MockExtras = {
+    demo: {
+      async load() {
+        await lag(); need('settings.manage')
+        tx(() => {
+          if (state.members.length > 0) throw new AppError('conflict', 'Ya hay datos. Bórralos antes de cargar el ejemplo.')
+          state = buildDemoState(state, today())
+        })
+      },
+      async clear() {
+        await lag(); need('settings.manage')
+        tx(() => { state = clearData(state) })
+      },
+    },
     reset() {
       state = seed()
       opts.storage?.removeItem(key)

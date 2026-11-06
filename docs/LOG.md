@@ -29,6 +29,7 @@
 - Personal: `staff.manage` no se puede asignar a recepción (evita escalar privilegios). No hay cambio de contraseña ni recuperación todavía (en Supabase: flujo de Auth). En el mock la contraseña se guarda en claro: solo para desarrollo.
 - PWA: el service worker solo cachea el shell y los archivos propios; no hay escritura offline. Con el mock local (localStorage) cobrar "funciona" sin red; al conectar Supabase, el adaptador debe convertir los fallos de red en un `AppError` claro ("Sin conexión") y los formularios mostrarlo. Cuando se publique una versión nueva, el HTML (red primero) trae los archivos nuevos en la siguiente carga; no hay aviso de "nueva versión" todavía.
 - Tipografía: se declara Roboto sin empaquetarla (en Android ya viene; en otros sistemas cae a la fuente del sistema). Empaquetar 400/500 (~30 KB) si se quiere idéntico en todos lados.
+- Datos de demostración: `src/lib/data/demo.ts` (solo mock; `demo.available` pasa a `false` al conectar Supabase y la UI oculta la tarjeta). Cargar se niega si ya hay socios. Depende de la fecha de hoy (el mes en curso siempre trae ingresos y gastos).
 - Los números de recibo pueden saltarse si una transacción falla tras incrementar el contador en SQL real (en el mock no ocurre por el rollback). Aceptable; los recibos nunca se reutilizan.
 
 ## Mejoras propuestas
