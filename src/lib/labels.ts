@@ -54,3 +54,10 @@ export const PERMISSION_GROUPS: { title: string; items: { permission: Permission
 export const PERMISSION_LABEL: Partial<Record<Permission, string>> = Object.fromEntries(
   PERMISSION_GROUPS.flatMap((g) => g.items.map((i) => [i.permission, i.label])),
 ) as Partial<Record<Permission, string>>
+
+export const AUDIT_ACTION_LABEL = {
+  'payment.create': 'Cobro registrado',
+  'payment.void': 'Cobro anulado',
+  'movement.create': 'Movimiento registrado',
+  'movement.void': 'Movimiento anulado',
+} as const

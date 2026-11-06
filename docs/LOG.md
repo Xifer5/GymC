@@ -39,7 +39,7 @@
 |---|---|---|---|
 | IMP-001 | Offline de escritura en recepción (cola local de pagos) | Baja | Idea |
 | IMP-002 | Asistencia por QR | Futura | Idea |
-| IMP-006 | **Trazabilidad visible**: quién registró/anuló cada pago o movimiento y cuándo, bitácora de cambios (precios, permisos, usuarios), todo exportable. El SQL ya guarda `created_by`, `voided_by`, `voided_at` y `audit_log`; falta llevarlo al mock, la UI y la exportación (T-24) | Alta (antes de v1.0) | Pendiente |
+| IMP-006 | **Trazabilidad visible**: quién registró/anuló cada pago o movimiento y cuándo, bitácora de cambios (precios, permisos, usuarios), todo exportable. El SQL ya guarda `created_by`, `voided_by`, `voided_at` y `audit_log`; falta llevarlo al mock, la UI y la exportación (T-24) | Alta (antes de v1.0) | Hecho (parcial: la bitácora cubre cobros y movimientos; cambios de precios, permisos y usuarios quedan para cuando exista `audit_log` real en Supabase) |
 | IMP-007 | Respaldo programado automático (T-20) y restauración desde la copia JSON/Excel | Media | Pendiente |
 | IMP-004 | Membresía de cortesía (sin pago) con permiso propio | Media | Idea |
 | IMP-005 | Compartir recibo por WhatsApp (enlace/PDF) | Futura | Idea |

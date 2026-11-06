@@ -6,6 +6,7 @@ import { DataTable } from '@/components/shared/DataTable'
 import type { Column } from '@/components/shared/DataTable'
 import { MoneyDisplay } from '@/components/shared/MoneyDisplay'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { RecordStatus } from '@/components/shared/RecordStatus'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -121,15 +122,7 @@ export function MemberDetailPage({ id }: { id: string }) {
     {
       id: 'status',
       header: 'Estado',
-      cell: (p) =>
-        p.status === 'voided' ? (
-          <span class="inline-flex flex-col items-start gap-1">
-            <Badge tone="error">Anulado</Badge>
-            {p.voidReason && <span class="text-body-sm text-on-surface-variant">{p.voidReason}</span>}
-          </span>
-        ) : (
-          <Badge tone="success">Confirmado</Badge>
-        ),
+      cell: (p) => <RecordStatus status={p.status} voidReason={p.voidReason} voidedByName={p.voidedByName} voidedAt={p.voidedAt} createdByName={p.createdByName} />,
     },
     ...(can('payments.void')
       ? [

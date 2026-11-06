@@ -4,13 +4,14 @@ import { useAsyncData } from '@/lib/useAsyncData'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Segmented } from '@/components/ui/Segmented'
 import { useAuth } from '@/features/auth/AuthProvider'
+import { AuditSettings } from './AuditSettings'
 import { CategoriesSettings } from './CategoriesSettings'
 import { DemoDataCard } from './DemoDataCard'
 import { ExportSettings } from './ExportSettings'
 import { GymSettings } from './GymSettings'
 import { StaffSettings } from './StaffSettings'
 
-type Tab = 'gym' | 'categories' | 'data' | 'staff'
+type Tab = 'gym' | 'categories' | 'data' | 'audit' | 'staff'
 
 /** Ajustes: datos del gimnasio, categorías y personal (cada sección según permiso). */
 export function SettingsPage() {
@@ -19,6 +20,7 @@ export function SettingsPage() {
     { value: 'gym', label: 'Gimnasio' },
     { value: 'categories', label: 'Categorías' },
     { value: 'data', label: 'Datos' },
+    ...(can('settings.manage') ? [{ value: 'audit' as const, label: 'Bitácora' }] : []),
     ...(can('staff.manage') ? [{ value: 'staff' as const, label: 'Personal' }] : []),
   ]
   const [tab, setTab] = useState<Tab>('gym')
@@ -38,6 +40,7 @@ export function SettingsPage() {
       )}
       {tab === 'categories' && <CategoriesSettings />}
       {tab === 'data' && <ExportSettings />}
+      {tab === 'audit' && can('settings.manage') && <AuditSettings />}
       {tab === 'staff' && can('staff.manage') && <StaffSettings />}
     </>
   )

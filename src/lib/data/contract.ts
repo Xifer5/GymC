@@ -344,6 +344,33 @@ export function runDataApiContract(name: string, factory: () => DataApi) {
         await api.auth.signIn(...RECEP)
         expect(await code(api.backup.get())).toBe('forbidden')
       })
+      it('trazabilidad: queda quién registró y quién anuló, con fecha; la bitácora es solo del admin y no se borra nada', async () => {
+        const m = await newMember('888', 'Traza Uno')
+        await api.auth.signIn(...RECEP)
+        const pay = await api.payments.sell({ memberId: m.id, planId: mensual.id, paidCents: 15000, method: 'cash' })
+        await api.auth.signIn(...ADMIN)
+        await api.payments.void(pay.id, 'cobro duplicado')
+        const [exp] = await api.categories.list('expense')
+        const mov = await api.movements.register({ type: 'expense', categoryId: exp.id, description: 'Luz', amountCents: 500, method: 'cash' })
+        await api.movements.void(mov.id, 'error')
+
+        const [stored] = await api.payments.listForMember(m.id)
+        expect(stored).toMatchObject({ status: 'voided', createdByName: 'Carla Rojas', voidedByName: 'Admin Demo' })
+        expect(Date.parse(stored.voidedAt ?? '')).not.toBeNaN()
+        const listed = (await api.movements.list()).items.find((x) => x.id === mov.id)
+        expect(listed).toMatchObject({ createdByName: 'Admin Demo', voidedByName: 'Admin Demo' })
+        expect(Date.parse(listed?.voidedAt ?? '')).not.toBeNaN()
+
+        const log = (await api.audit.list()).items
+        expect(log.map((e) => e.action).sort()).toEqual(['movement.create', 'movement.void', 'payment.create', 'payment.void'])
+        expect(log.find((e) => e.action === 'payment.create')?.userName).toBe('Carla Rojas')
+        expect(log.find((e) => e.action === 'payment.void')).toMatchObject({ userName: 'Admin Demo', reason: 'cobro duplicado' })
+        const dates = log.map((e) => e.at)
+        expect(dates).toEqual([...dates].sort().reverse()) // la más reciente primero
+
+        await api.auth.signIn(...RECEP)
+        expect(await code(api.audit.list())).toBe('forbidden')
+      })
       it('personal: no se modifica a un administrador', async () => {
         const admin = (await api.staff.list()).find((u) => u.role === 'admin')!
         expect(await code(api.staff.update(admin.id, { active: false }))).toBe('forbidden')

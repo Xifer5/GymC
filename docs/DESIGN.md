@@ -92,3 +92,9 @@ Pendiente de ui/: DatePicker propio (por ahora `TextField type="date"`), Chip.
 ## Exportación y demo (T-19+)
 - `lib/csv.ts` (CSV Excel-es: `;`, BOM, coma decimal, anti-fórmula), `lib/xlsx.ts` (xlsx real sin dependencias: ZIP "store", hojas, encabezado en negrita y fijo, importes numéricos), `lib/exports.ts` (tablas Socios/Membresías/Pagos/Movimientos + Resumen). `api.backup.get()` (permiso `settings.manage`) entrega todo, incluidos archivados y anulados, nunca contraseñas.
 - Ajustes tiene 4 pestañas: Gimnasio · Categorías · Datos · Personal. `DemoDataCard`: cargar / reemplazar / borrar con confirmación y "Descargar una copia antes".
+
+## Trazabilidad visible (T-24 ✔)
+- `RecordStatus` (shared): en Movimientos y en la ficha del socio muestra "Registró X" si está confirmado y, si está anulado, motivo + "por X · dd/mm/aaaa hh:mm".
+- Ajustes > Bitácora (solo `settings.manage`): lista de solo lectura, la más reciente primero, de cobros y movimientos registrados o anulados (`api.audit.list`). En el mock se deriva de los registros; con Supabase saldrá de `audit_log`.
+- Pagos y movimientos guardan `createdBy`, `voidedBy`, `voidedAt` (y movimientos `createdAt`); el nombre se resuelve al listar (`createdByName`, `voidedByName`). Datos guardados antes de T-24 pueden no traerlos y se muestran sin responsable.
+- La exportación (Excel/CSV) añade Registrado por, Anulado por y Anulado el.

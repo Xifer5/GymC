@@ -102,6 +102,12 @@ export interface Payment {
   note?: string
   status: RecordStatus
   voidReason?: string
+  /** Trazabilidad: quién registró y quién anuló, y cuándo (ISO). Datos antiguos pueden no traerlos. */
+  createdBy?: string
+  voidedBy?: string
+  voidedAt?: string
+  createdByName?: string
+  voidedByName?: string
 }
 
 export interface GymInfo {
@@ -143,6 +149,22 @@ export interface Movement {
   status: RecordStatus
   voidReason?: string
   createdBy: string
+  /** Momento del registro (ISO); `occurredOn` es la fecha del hecho y puede ser anterior. */
+  createdAt?: string
+  voidedBy?: string
+  voidedAt?: string
+  createdByName?: string
+  voidedByName?: string
+}
+
+/** Una línea de la bitácora: quién hizo qué y cuándo. Solo lectura, nunca se edita ni se borra. */
+export interface AuditEntry {
+  id: string
+  at: string
+  userName: string
+  action: 'payment.create' | 'payment.void' | 'movement.create' | 'movement.void'
+  description: string
+  reason?: string
 }
 
 export interface Page<T> {
@@ -294,6 +316,10 @@ export interface DataApi {
   }
   dashboard: {
     get(): Promise<DashboardData>
+  }
+  audit: {
+    /** Bitácora de altas y anulaciones, la más reciente primero. Requiere `settings.manage`. */
+    list(opts?: PageQuery): Promise<Page<AuditEntry>>
   }
   backup: {
     /** Todos los datos del gimnasio, para descargar. Requiere `settings.manage`. */

@@ -64,6 +64,9 @@ describe('datos de demostración', () => {
       voided += (await a.payments.listForMember(m.id)).filter((p) => p.status === 'voided').length
     }
     expect(voided).toBe(1)
+    const log = (await a.audit.list({ pageSize: 500 })).items
+    expect(log.filter((e) => e.action.endsWith('void'))).toHaveLength(2) // el cobro y la compra anulados de la demo
+    expect(log.every((e) => e.userName !== '—')).toBe(true) // todo registro de la demo tiene responsable
   })
 
   it('recibos correlativos sin repetir y el libro de caja cuadra con el resumen', async () => {

@@ -8,7 +8,7 @@ import {
   GYM_TZ, membershipEnd, membershipState, monthRange, renewalStart, timestampToISODate, todayISO,
 } from '../dates'
 import type { ISODate } from '../dates'
-import { sumCents } from '../money'
+import { formatMoney, sumCents } from '../money'
 import { hasPermission } from '../permissions'
 import type { Cents } from '../money'
 import { buildDemoState, clearData } from './demo'
@@ -17,7 +17,7 @@ import type {
   Category, DashboardData, DataApi, DateRange, LedgerEntry, Member, MemberInput, Membership,
   MemberListItem, MembershipWithMember, Movement, Page, PageQuery, Payment, PaymentMethod, Permission, Plan,
   PlanInput, Profile, StaffInput, Summary,
-  BackupData, GymInfo,
+  BackupData, GymInfo, AuditEntry,
 } from './types'
 
 type StoredUser = Profile & { password: string }
@@ -222,7 +222,7 @@ export function createMockApi(opts: MockOptions = {}): DataApi & MockExtras {
   function registerPaymentInternal(i: {
     membershipId: string; amountCents: Cents; method: PaymentMethod; note?: string
   }): Payment {
-    need('payments.create')
+    const u = need('payments.create')
     const ms = state.memberships.find((m) => m.id === i.membershipId)
     if (!ms) throw new AppError('not_found', 'Membresía no encontrada')
     if (ms.status !== 'active') throw new AppError('invalid', 'La membresía está cancelada')
@@ -234,18 +234,30 @@ export function createMockApi(opts: MockOptions = {}): DataApi & MockExtras {
     const p: Payment = {
       id: uid(), memberId: ms.memberId, membershipId: ms.id, receiptNo: ++state.receiptSeq,
       amountCents: i.amountCents, method: i.method, paidAt: now().toISOString(),
-      note: i.note, status: 'confirmed',
+      note: i.note, status: 'confirmed', createdBy: u.id,
     }
     state.payments.push(p)
     return p
   }
 
-  function voidRecord(rec: { status: 'confirmed' | 'voided'; voidReason?: string }, reason: string) {
+  function voidRecord(
+    rec: { status: 'confirmed' | 'voided'; voidReason?: string; voidedBy?: string; voidedAt?: string },
+    reason: string,
+    by: string,
+  ) {
     const r = reason.trim()
     if (!r) throw new AppError('invalid', 'El motivo es obligatorio')
     if (rec.status === 'voided') throw new AppError('conflict', 'El registro ya está anulado')
     rec.status = 'voided'
     rec.voidReason = r
+    rec.voidedBy = by
+    rec.voidedAt = now().toISOString()
+  }
+
+  /** Agrega los nombres de quién registró/anuló (equivale a un join con perfiles). */
+  function named<T extends { createdBy?: string; voidedBy?: string }>(rec: T): T & { createdByName?: string; voidedByName?: string } {
+    const name = (id?: string) => (id ? state.users.find((u) => u.id === id)?.fullName ?? '—' : undefined)
+    return { ...rec, createdByName: name(rec.createdBy), voidedByName: name(rec.voidedBy) }
   }
 
   function summarize(range: DateRange): Summary {
@@ -431,21 +443,21 @@ export function createMockApi(opts: MockOptions = {}): DataApi & MockExtras {
         return tx(() => registerPaymentInternal(input))
       },
       async void(id, reason) {
-        await lag(); need('payments.void')
+        await lag(); const u = need('payments.void')
         tx(() => {
           const p = state.payments.find((x) => x.id === id)
           if (!p) throw new AppError('not_found', 'Pago no encontrado')
-          voidRecord(p, reason)
+          voidRecord(p, reason, u.id)
         })
       },
       async listForMember(memberId) {
         await lag(); needAny('payments.create', 'reports.view')
-        return byNewest(state.payments.filter((p) => p.memberId === memberId))
+        return byNewest(state.payments.filter((p) => p.memberId === memberId)).map(named)
       },
       async list(o) {
         await lag(); needAny('payments.create', 'reports.view')
         const items = byNewest(state.payments).filter((p) => inRange(timestampToISODate(p.paidAt), o ?? {}))
-        return paginate(items, o)
+        return paginate(items.map(named), o)
       },
     },
 
@@ -548,18 +560,18 @@ export function createMockApi(opts: MockOptions = {}): DataApi & MockExtras {
             id: uid(), type: input.type, categoryId: cat.id,
             description: requireText(input.description, 'La descripción'),
             amountCents: input.amountCents, method: input.method,
-            occurredOn: input.occurredOn ?? today(), status: 'confirmed', createdBy: u.id,
+            occurredOn: input.occurredOn ?? today(), status: 'confirmed', createdBy: u.id, createdAt: now().toISOString(),
           }
           state.movements.push(m)
           return m
         })
       },
       async void(id, reason) {
-        await lag(); need('movements.write')
+        await lag(); const u = need('movements.write')
         tx(() => {
           const m = state.movements.find((x) => x.id === id)
           if (!m) throw new AppError('not_found', 'Movimiento no encontrado')
-          voidRecord(m, reason)
+          voidRecord(m, reason, u.id)
         })
       },
       async list(o) {
@@ -569,7 +581,7 @@ export function createMockApi(opts: MockOptions = {}): DataApi & MockExtras {
             inRange(m.occurredOn, o ?? {}) && (!o?.type || m.type === o.type) &&
             (!o?.categoryId || m.categoryId === o.categoryId),
         )
-        return paginate(items, o)
+        return paginate(items.map(named), o)
       },
     },
 
@@ -601,6 +613,32 @@ export function createMockApi(opts: MockOptions = {}): DataApi & MockExtras {
       },
     },
 
+    audit: {
+      async list(o) {
+        await lag(); need('settings.manage')
+        const who = (id?: string) => (id ? state.users.find((u) => u.id === id)?.fullName ?? '—' : '—')
+        const member = new Map(state.members.map((m) => [m.id, m.fullName]))
+        const entries: AuditEntry[] = []
+        for (const p of state.payments) {
+          const label = `Recibo #${p.receiptNo} · ${member.get(p.memberId) ?? '—'} · ${formatMoney(p.amountCents)}`
+          entries.push({ id: `${p.id}:c`, at: p.paidAt, userName: who(p.createdBy), action: 'payment.create', description: label })
+          if (p.status === 'voided') {
+            entries.push({ id: `${p.id}:v`, at: p.voidedAt ?? p.paidAt, userName: who(p.voidedBy), action: 'payment.void', description: label, reason: p.voidReason })
+          }
+        }
+        for (const m of state.movements) {
+          const label = `${m.description} · ${formatMoney(m.amountCents)}`
+          const at = m.createdAt ?? `${m.occurredOn}T12:00:00.000Z`
+          entries.push({ id: `${m.id}:c`, at, userName: who(m.createdBy), action: 'movement.create', description: label })
+          if (m.status === 'voided') {
+            entries.push({ id: `${m.id}:v`, at: m.voidedAt ?? at, userName: who(m.voidedBy), action: 'movement.void', description: label, reason: m.voidReason })
+          }
+        }
+        entries.sort((a, b) => (a.at === b.at ? (a.id < b.id ? 1 : -1) : a.at < b.at ? 1 : -1))
+        return paginate(entries, o)
+      },
+    },
+
     backup: {
       async get(): Promise<BackupData> {
         await lag(); need('settings.manage')
@@ -615,10 +653,8 @@ export function createMockApi(opts: MockOptions = {}): DataApi & MockExtras {
           categories: state.categories,
           members: state.members,
           memberships: state.memberships.map((m) => ({ ...view(m), ...who(m.memberId) })),
-          payments: state.payments.map((p) => ({ ...p, ...who(p.memberId) })),
-          movements: state.movements.map((m) => ({
-            ...m, categoryName: cat.get(m.categoryId) ?? '—', createdByName: user.get(m.createdBy) ?? '—',
-          })),
+          payments: state.payments.map((p) => ({ ...named(p), ...who(p.memberId) })),
+          movements: state.movements.map((m) => ({ ...named(m), categoryName: cat.get(m.categoryId) ?? '—', createdByName: user.get(m.createdBy) ?? '—' })),
           staff: state.users.map(({ fullName, email, role, permissions, active }) => ({ fullName, email, role, permissions, active })),
         })
       },

@@ -5,6 +5,7 @@ import type { Column } from '@/components/shared/DataTable'
 import { MoneyDisplay } from '@/components/shared/MoneyDisplay'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Pagination } from '@/components/shared/Pagination'
+import { RecordStatus } from '@/components/shared/RecordStatus'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
@@ -98,15 +99,7 @@ export function MovementsPage() {
     {
       id: 'status',
       header: 'Estado',
-      cell: (m) =>
-        m.status === 'voided' ? (
-          <span class="inline-flex flex-col items-start gap-1">
-            <Badge tone="error">Anulado</Badge>
-            {m.voidReason && <span class="text-body-sm text-on-surface-variant">{m.voidReason}</span>}
-          </span>
-        ) : (
-          <Badge tone="success">Confirmado</Badge>
-        ),
+      cell: (m) => <RecordStatus status={m.status} voidReason={m.voidReason} voidedByName={m.voidedByName} voidedAt={m.voidedAt} createdByName={m.createdByName} />,
     },
     ...(canWrite
       ? [

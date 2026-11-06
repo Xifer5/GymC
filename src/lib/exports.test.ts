@@ -16,11 +16,11 @@ const base: BackupData = {
     { id: 'ms2', memberId: 'm2', memberName: 'Beto "El Toro" Ríos', memberCi: '6100001', planId: 'p', planName: 'Mensual', priceCents: 15000, discountCents: 0, startDate: '2026-09-01', endDate: '2026-09-30', status: 'active', paidCents: 15000, dueCents: 0 },
   ],
   payments: [
-    { id: 'p2', memberId: 'm2', memberName: 'Beto "El Toro" Ríos', memberCi: '6100001', membershipId: 'ms2', receiptNo: 2, amountCents: 15000, method: 'cash', paidAt: '2026-11-05T14:00:00.000Z', status: 'voided', voidReason: 'Cobro duplicado; error' },
+    { id: 'p2', memberId: 'm2', memberName: 'Beto "El Toro" Ríos', memberCi: '6100001', membershipId: 'ms2', receiptNo: 2, amountCents: 15000, method: 'cash', paidAt: '2026-11-05T14:00:00.000Z', status: 'voided', voidReason: 'Cobro duplicado; error', createdByName: 'Carla Rojas', voidedByName: 'Admin Demo', voidedAt: '2026-11-05T15:30:00.000Z' },
     { id: 'p1', memberId: 'm1', memberName: 'Ana Vega', memberCi: '6100000', membershipId: 'ms1', receiptNo: 1, amountCents: 8000, method: 'qr', paidAt: '2026-11-04T03:00:00.000Z', status: 'confirmed' },
   ],
   movements: [
-    { id: 'x1', type: 'expense', categoryId: 'c', categoryName: 'Servicios', description: 'Luz', amountCents: 12050, method: 'transfer', occurredOn: '2026-11-03', status: 'confirmed', createdBy: 'u', createdByName: 'Admin Demo' },
+    { id: 'x1', type: 'expense', categoryId: 'c', categoryName: 'Servicios', description: 'Luz', amountCents: 12050, method: 'transfer', occurredOn: '2026-11-03', status: 'confirmed', createdBy: 'u', createdByName: 'Admin Demo', createdAt: '2026-11-03T14:00:00.000Z' },
     { id: 'x0', type: 'income', categoryId: 'c', categoryName: 'Venta de productos', description: 'Agua', amountCents: 600, method: 'cash', occurredOn: '2026-11-01', status: 'confirmed', createdBy: 'u', createdByName: 'Admin Demo' },
   ],
   staff: [{ fullName: 'Admin Demo', email: 'admin@gym.local', role: 'admin', permissions: [], active: true }],
@@ -50,6 +50,13 @@ describe('exportación de datos', () => {
     expect(beto[10]).toBe('Vencida')
   })
 
+  it('trazabilidad: quién registró y quién anuló, con fecha y hora del gimnasio', () => {
+    expect(t.pagos.header.slice(-3)).toEqual(['Registrado por', 'Anulado por', 'Anulado el'])
+    expect(t.pagos.rows[1].slice(9)).toEqual(['Carla Rojas', 'Admin Demo', '2026-11-05 11:30'])
+    expect(t.movimientos.rows[1].slice(8, 10)).toEqual(['Admin Demo', '2026-11-03 10:00'])
+    expect(t.movimientos.rows[1][10]).toBeFalsy()
+  })
+
   it('movimientos por fecha, egresos en negativo', () => {
     expect(t.movimientos.rows.map((r) => r[0])).toEqual(['2026-11-01', '2026-11-03'])
     expect(t.movimientos.rows[1][5]).toEqual({ cents: -12050 })
@@ -61,7 +68,7 @@ describe('exportación de datos', () => {
     expect(csv).toContain('"Beto ""El Toro"" Ríos"')
     expect(csv).toContain(`"'=cmd|x"`)
     const pagos = backupCsv(base, 'pagos').split('\r\n')
-    expect(pagos[1]).toBe('1;2026-11-03;23:00;"Ana Vega";"6100000";"QR";80,00;"Confirmado";')
+    expect(pagos[1]).toBe('1;2026-11-03;23:00;"Ana Vega";"6100000";"QR";80,00;"Confirmado";;;;')
     expect(pagos[2]).toContain('"Cobro duplicado; error"') // el ; dentro de comillas no rompe la fila
   })
 

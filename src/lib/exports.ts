@@ -22,6 +22,9 @@ export interface TableData {
 const STATE_LABEL = { active: 'Vigente', expiring: 'Por vencer', expired: 'Vencida' } as const
 const RECORD_LABEL = { confirmed: 'Confirmado', voided: 'Anulado' } as const
 
+/** `2026-11-05 10:32` en hora del gimnasio, o vacío. */
+const stampText = (iso?: string): string | null => (iso ? `${timestampToISODate(iso)} ${formatTime(iso)}` : null)
+
 export function backupTables(b: BackupData): TableData[] {
   const today = timestampToISODate(b.exportedAt)
   return [
@@ -45,23 +48,25 @@ export function backupTables(b: BackupData): TableData[] {
     {
       key: 'pagos',
       title: 'Pagos',
-      header: ['Recibo', 'Fecha', 'Hora', 'Socio', 'CI', 'Método', 'Monto (Bs)', 'Estado', 'Motivo de anulación'],
+      header: ['Recibo', 'Fecha', 'Hora', 'Socio', 'CI', 'Método', 'Monto (Bs)', 'Estado', 'Motivo de anulación', 'Registrado por', 'Anulado por', 'Anulado el'],
       rows: [...b.payments]
         .sort((x, y) => x.receiptNo - y.receiptNo)
         .map((p) => [
           p.receiptNo, timestampToISODate(p.paidAt), formatTime(p.paidAt), p.memberName, p.memberCi,
           PAYMENT_METHOD_LABEL[p.method], { cents: p.amountCents }, RECORD_LABEL[p.status], p.voidReason,
+          p.createdByName, p.voidedByName, stampText(p.voidedAt),
         ]),
     },
     {
       key: 'movimientos',
       title: 'Movimientos',
-      header: ['Fecha', 'Tipo', 'Categoría', 'Descripción', 'Método', 'Monto (Bs)', 'Estado', 'Motivo de anulación', 'Registrado por'],
+      header: ['Fecha', 'Tipo', 'Categoría', 'Descripción', 'Método', 'Monto (Bs)', 'Estado', 'Motivo de anulación', 'Registrado por', 'Registrado el', 'Anulado por', 'Anulado el'],
       rows: [...b.movements]
         .sort((x, y) => (x.occurredOn < y.occurredOn ? -1 : x.occurredOn > y.occurredOn ? 1 : 0))
         .map((m) => [
           m.occurredOn, MOVEMENT_TYPE_LABEL[m.type], m.categoryName, m.description, PAYMENT_METHOD_LABEL[m.method],
-          { cents: m.type === 'expense' ? -m.amountCents : m.amountCents }, RECORD_LABEL[m.status], m.voidReason, m.createdByName,
+          { cents: m.type === 'expense' ? -m.amountCents : m.amountCents }, RECORD_LABEL[m.status], m.voidReason,
+          m.createdByName, stampText(m.createdAt), m.voidedByName, stampText(m.voidedAt),
         ]),
     },
   ]

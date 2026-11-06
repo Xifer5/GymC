@@ -46,6 +46,7 @@ export function buildDemoState(base: DbState, today: ISODate): DbState {
   const mensual = plan('Mensual')
   const quincenal = plan('Quincenal')
   const adminId = (base.users.find((u) => u.role === 'admin') ?? base.users[0]).id
+  const recepId = (base.users.find((u) => u.role !== 'admin') ?? base.users[0]).id // cobra la recepción
 
   const members: Member[] = []
   const memberships: StoredMembership[] = []
@@ -114,12 +115,13 @@ export function buildDemoState(base: DbState, today: ISODate): DbState {
     payments.push({
       id: crypto.randomUUID(), memberId: dupFor.memberId, membershipId: dupFor.id, amountCents: dupFor.priceCents,
       method: 'cash', paidAt: stamp(dupFor.startDate), status: 'voided', voidReason: 'Cobro duplicado',
+      voidedBy: adminId, voidedAt: stamp(dupFor.startDate),
     })
   }
 
   // Recibos correlativos en orden cronológico.
   const ordered = payments.sort((a, b) => (a.paidAt === b.paidAt ? (a.id < b.id ? -1 : 1) : a.paidAt < b.paidAt ? -1 : 1))
-  const numbered: Payment[] = ordered.map((p, k) => ({ ...p, receiptNo: k + 1 }))
+  const numbered: Payment[] = ordered.map((p, k) => ({ ...p, receiptNo: k + 1, createdBy: recepId }))
 
   // ── Movimientos de caja ──
   const cat = (type: Category['type'], name: string): string | undefined =>
@@ -130,7 +132,7 @@ export function buildDemoState(base: DbState, today: ISODate): DbState {
     if (!categoryId || date > today) return
     movements.push({
       id: crypto.randomUUID(), type, categoryId, description, amountCents, method,
-      occurredOn: date, status: 'confirmed', createdBy: adminId, ...extra,
+      occurredOn: date, status: 'confirmed', createdBy: adminId, createdAt: `${date}T13:00:00.000Z`, ...extra,
     })
   }
 
@@ -143,7 +145,7 @@ export function buildDemoState(base: DbState, today: ISODate): DbState {
   }
   move('expense', 'Mantenimiento', 'Reparación de cinta de correr', 32000, 'cash', addDays(today, -19))
   move('expense', 'Equipos', 'Mancuernas nuevas', 40000, 'transfer', addDays(today, -40))
-  move('expense', 'Mantenimiento', 'Compra duplicada de insumos', 15000, 'cash', addDays(today, -6), { status: 'voided', voidReason: 'Compra duplicada' })
+  move('expense', 'Mantenimiento', 'Compra duplicada de insumos', 15000, 'cash', addDays(today, -6), { status: 'voided', voidReason: 'Compra duplicada', voidedBy: adminId, voidedAt: `${addDays(today, -6)}T18:00:00.000Z` })
   for (let d = -58; d <= 0; d += int(3, 5)) {
     move('income', 'Venta de productos', pick(['Agua y bebidas', 'Proteína (porción)', 'Barras energéticas', 'Guantes de gimnasio']), int(3, 14) * 1000, pick(METHODS), addDays(today, d))
   }

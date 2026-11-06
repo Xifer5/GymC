@@ -48,7 +48,7 @@ src/lib/{supabase,money,dates,validations}
 - T-22 (PWA instalable + auditoría de accesibilidad M3) hecha. **Front-end de la v1 completo sobre el mock; listo para mostrar al gimnasio**
 - Publicado en Cloudflare Workers (https://gymc.lgsalesglobal1.workers.dev) desde GitHub `Xifer5/GymC` (privado): cada `git push` a `main` redespliega. Con el mock, los datos viven en el navegador de cada dispositivo; hay botón "Cargar datos de ejemplo" (Inicio vacío y Ajustes > Gimnasio) y "Borrar todos los datos"
 - Datos: Ajustes > Datos exporta Excel (.xlsx real, una hoja por tabla), CSV por tabla y copia JSON (incluye anulados con motivo, sin contraseñas)
-- Pendiente recomendado antes de v1.0: T-24 trazabilidad visible (quién/cuándo en pagos y anulaciones, bitácora)
+- T-24 (trazabilidad visible) hecha: pagos y movimientos muestran quién registró y quién/cuándo anuló; Ajustes > Bitácora (solo admin, solo lectura); la exportación trae esas columnas
 - Próxima: retomar T-02/T-03 Supabase (adaptador que pase `contract.ts`, Edge Function `create-staff`, vista `v_ledger`, `v_members_current`); T-20, T-21 y T-23 dependen del servidor
 
 ## Datos en desarrollo (sin servidor)
